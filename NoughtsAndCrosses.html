@@ -14,6 +14,8 @@
             align-items: center;
             color: #fff;
             margin: 0;
+            cursor: none; /* Hide default cursor */
+            overflow: hidden;
         }
 
         h1 {
@@ -37,13 +39,14 @@
             font-size: 2.5rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s ease, box-shadow 0.3s ease;
             user-select: none;
         }
 
         .cell:hover {
             background: rgba(255, 255, 255, 0.4);
             transform: scale(1.05);
+            box-shadow: 0 0 25px 10px rgba(255, 255, 255, 0.7);
         }
 
         button {
@@ -56,7 +59,7 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: all 0.2s ease;
         }
 
@@ -74,9 +77,56 @@
             from { background-color: rgba(255, 255, 255, 0.6); }
             to { background-color: rgba(255, 255, 255, 0.3); }
         }
+
+        .cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: transform 0.05s ease, width 0.2s ease, height 0.2s ease, background 0.2s ease;
+            box-shadow: 0 0 15px 5px rgba(255,255,255,0.6),
+                        0 0 30px 15px rgba(255,255,255,0.3);
+            mix-blend-mode: lighten;
+            z-index: 9999;
+        }
+
+        .cursor.hover {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 40px 15px rgba(255,255,255,0.6),
+                        0 0 80px 40px rgba(255,255,255,0.2);
+        }
+
+        /* light trail */
+        .trail {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: lighten;
+            z-index: 9998;
+            animation: fade 0.5s forwards;
+        }
+
+        @keyframes fade {
+            from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        }
     </style>
 </head>
 <body>
+    <!-- Maus-Follow Glow -->
+    <div class="cursor" id="cursor"></div>
+
     <h1>Noughts and Crosses</h1>
 
     <div id="gameBoard">
@@ -150,6 +200,31 @@
             currentPlayer = "O";
             won = false;
         }
+
+        // Mouse-following script with light trail
+        const cursor = document.getElementById("cursor");
+
+        document.addEventListener("mousemove", (e) => {
+            cursor.style.top = e.clientY + "px";
+            cursor.style.left = e.clientX + "px";
+
+            // Create light trail
+            const trail = document.createElement("div");
+            trail.className = "trail";
+            trail.style.top = e.clientY + "px";
+            trail.style.left = e.clientX + "px";
+            document.body.appendChild(trail);
+
+            setTimeout(() => {
+                trail.remove();
+            }, 500);
+        });
+
+        const hoverElements = document.querySelectorAll(".cell, button");
+        hoverElements.forEach(el => {
+            el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+            el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
+        });
     </script>
 </body>
 </html>
