@@ -1,0 +1,117 @@
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #e4e4e4, #bcbcbc);
+    font-family: 'Roboto Mono', monospace;
+    overflow: hidden;
+}
+
+.stage {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #f0f0f0, #c9c9c9);
+    box-shadow:
+        inset 10px 10px 15px rgba(0, 0, 0, 0.25),
+        10px 10px 25px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.figur {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    background: transparent url('figur.png') 0 0 no-repeat;
+    background-size: cover;
+    animation: run 1s steps(4) infinite;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    transition: transform 0.3s ease;
+}
+
+@keyframes run {
+    100% {
+        background-position: -520px 0;
+    }
+}
+
+p.loading {
+    position: absolute;
+    bottom: -60px;
+    width: 100%;
+    text-align: center;
+    color: #444;
+    font-size: 16px;
+    font-family: 'Press Start 2P', monospace;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 2px #999;
+    animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+
+input.left, input.right,
+span.left, span.right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 20;
+}
+
+span.left, span.right {
+    pointer-events: none;
+    font-size: 28px;
+    color: #333;
+    text-shadow: 1px 1px 2px #777;
+    transition: color 0.2s;
+}
+
+span.left:hover, span.right:hover {
+    color: #111;
+}
+
+input.left, input.right {
+    opacity: 0;
+}
+
+
+.left {
+    left: -50px;
+}
+
+.right {
+    right: -50px;
+}
+
+
+input.left:checked ~ .figur {
+    transform: translate(-50%, -50%) scaleX(-1);
+}
+
+
+@media (max-width: 500px) {
+    .stage {
+        width: 200px;
+        height: 200px;
+    }
+    .figur {
+        width: 100px;
+        height: 100px;
+    }
+    span.left, span.right {
+        font-size: 22px;
+    }
+}
