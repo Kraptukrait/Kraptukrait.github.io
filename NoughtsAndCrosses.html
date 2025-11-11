@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+    <meta charset="UTF-8">
+    <title>Kraptukrait Noughts and Crosses</title>
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #007bff, #00c6ff);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+        }
+
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #fff;
+            color: #007bff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #007bff;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .winner {
+            animation: flash 0.6s ease alternate infinite;
+        }
+
+        @keyframes flash {
+            from { background-color: rgba(255, 255, 255, 0.6); }
+            to { background-color: rgba(255, 255, 255, 0.3); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Noughts and Crosses</h1>
+
+    <div id="gameBoard">
+        <div id="0_0" class="cell" onclick="place(this)"></div>
+        <div id="1_0" class="cell" onclick="place(this)"></div>
+        <div id="2_0" class="cell" onclick="place(this)"></div>
+
+        <div id="0_1" class="cell" onclick="place(this)"></div>
+        <div id="1_1" class="cell" onclick="place(this)"></div>
+        <div id="2_1" class="cell" onclick="place(this)"></div>
+
+        <div id="0_2" class="cell" onclick="place(this)"></div>
+        <div id="1_2" class="cell" onclick="place(this)"></div>
+        <div id="2_2" class="cell" onclick="place(this)"></div>
+    </div>
+
+    <button onclick="resetGame()">🔄 Reset Game</button>
+
+    <script>
+        var currentPlayer = "O"; 
+        var won = false;
+
+        function place(box) {
+            if (box.innerText !== "" || won) return; 
+            box.innerText = currentPlayer; 
+            currentPlayer = (currentPlayer === "O") ? "X" : "O";
+            checkGameBoard();
+        }
+
+        function checkGameBoard() {
+            for (var i = 0; i <= 2; i++) {
+                checkWinner(
+                    document.getElementById(i + "_0"),
+                    document.getElementById(i + "_1"),
+                    document.getElementById(i + "_2")
+                );
+                checkWinner(
+                    document.getElementById("0_" + i),
+                    document.getElementById("1_" + i),
+                    document.getElementById("2_" + i)
+                );
+            }
+            checkWinner(
+                document.getElementById("0_0"),
+                document.getElementById("1_1"),
+                document.getElementById("2_2")
+            );
+            checkWinner(
+                document.getElementById("0_2"),
+                document.getElementById("1_1"),
+                document.getElementById("2_0")
+            );
+        }
+
+        function checkWinner(a, b, c) {
+            if (a.innerText !== "" && a.innerText === b.innerText && a.innerText === c.innerText) {
+                a.classList.add("winner");
+                b.classList.add("winner");
+                c.classList.add("winner");
+                alert("🏆 Winner: " + a.innerText + "!");
+                won = true;
+            }
+        }
+
+        function resetGame() {
+            var boxes = document.querySelectorAll(".cell");
+            boxes.forEach(function(box) {
+                box.innerText = "";
+                box.classList.remove("winner");
+            });
+            currentPlayer = "O";
+            won = false;
+        }
+    </script>
+</body>
+</html>
