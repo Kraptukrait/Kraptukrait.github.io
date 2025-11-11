@@ -41,6 +41,7 @@
             cursor: pointer;
             transition: all 0.2s ease, box-shadow 0.3s ease;
             user-select: none;
+            position: relative;
         }
 
         .cell:hover {
@@ -78,6 +79,7 @@
             to { background-color: rgba(255, 255, 255, 0.3); }
         }
 
+        /* Mouse-follow glow with light trail */
         .cursor {
             position: fixed;
             top: 0;
@@ -121,10 +123,27 @@
             from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
         }
+
+        /* Glitter particles when set */
+        .spark {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,1);
+            pointer-events: none;
+            animation: sparkle 0.6s forwards;
+            z-index: 100;
+        }
+
+        @keyframes sparkle {
+            0% { transform: scale(1) translate(0,0); opacity: 1; }
+            50% { transform: scale(1.5) translate(var(--x), var(--y)); opacity: 1; }
+            100% { transform: scale(0) translate(var(--x), var(--y)); opacity: 0; }
+        }
     </style>
 </head>
 <body>
-    <!-- Maus-Follow Glow -->
     <div class="cursor" id="cursor"></div>
 
     <h1>Noughts and Crosses</h1>
@@ -152,8 +171,25 @@
         function place(box) {
             if (box.innerText !== "" || won) return; 
             box.innerText = currentPlayer; 
+
+            // Create glitter particles
+            createSparks(box);
+
             currentPlayer = (currentPlayer === "O") ? "X" : "O";
             checkGameBoard();
+        }
+
+        function createSparks(box) {
+            for (let i = 0; i < 10; i++) {
+                const spark = document.createElement("div");
+                spark.className = "spark";
+                let x = (Math.random() - 0.5) * 60 + "px";
+                let y = (Math.random() - 0.5) * 60 + "px";
+                spark.style.setProperty('--x', x);
+                spark.style.setProperty('--y', y);
+                box.appendChild(spark);
+                setTimeout(() => spark.remove(), 600);
+            }
         }
 
         function checkGameBoard() {
@@ -208,16 +244,12 @@
             cursor.style.top = e.clientY + "px";
             cursor.style.left = e.clientX + "px";
 
-            // Create light trail
             const trail = document.createElement("div");
             trail.className = "trail";
             trail.style.top = e.clientY + "px";
             trail.style.left = e.clientX + "px";
             document.body.appendChild(trail);
-
-            setTimeout(() => {
-                trail.remove();
-            }, 500);
+            setTimeout(() => trail.remove(), 500);
         });
 
         const hoverElements = document.querySelectorAll(".cell, button");
