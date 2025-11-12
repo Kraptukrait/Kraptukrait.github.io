@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #8B008B, #C71585);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      cursor: none;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 25px;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+
+    canvas {
+      border-radius: 15px;
+      background: rgba(255,255,255,0.1);
+      box-shadow: 0 0 25px 8px rgba(255,255,255,0.3);
+    }
+
+    button {
+      margin-top: 25px;
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #C71585;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #C71585;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    /* Cursor glow */
+    .cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.8);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform 0.05s ease, width 0.2s ease, height 0.2s ease, background 0.2s ease;
+      box-shadow: 0 0 15px 5px rgba(255,255,255,0.6),
+                  0 0 30px 15px rgba(255,255,255,0.3);
+      mix-blend-mode: lighten;
+      z-index: 9999;
+    }
+
+    .cursor.hover {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 40px 15px rgba(255,255,255,0.6),
+                  0 0 80px 40px rgba(255,255,255,0.2);
+    }
+
+    .trail {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: lighten;
+      z-index: 9998;
+      animation: fade 0.5s forwards;
+    }
+
+    @keyframes fade {
+      from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <h1>🐍 Snake</h1>
+  <canvas id="canvas" width="600" height="300"></canvas>
+  <button onclick="resetGame()">🔄 Restart</button>
+
+  <script>
+    // === GAME LOGIC ===
+    var game = {
+      tickNumber: 0,
+      timer: null,
+      fruitCount: 0,
+      field: [
+        "##############################",
+        "#                            #",
+        "#                            #",
+        "#                            #",
+        "#                            #",
+        "#                            #",
+        "#                            #",
+        "#                            #",
+        "#                            #",
+        "##############################"
+      ],
+      fruit: [{x: 5, y: 3}],
+      tick: function(){
+        clearTimeout(game.timer);
+        game.tickNumber++;
+        if(game.tickNumber % 10 == 0) game.setRandomFruit();
+        var result = snake.move();
+        if(result == "gameOver"){
+          alert("💀 Game Over!\n🍎 Fruits eaten: " + game.fruitCount);
+          return;
+        }
+        graphics.drawGame();
+        game.timer = setTimeout(game.tick, 200);
+      },
+      setRandomFruit: function(){
+        var y = Math.floor(Math.random() * game.field.length);
+        var x = Math.floor(Math.random() * game.field[y].length);
+        var pos = {x: x, y: y};
+        if (game.isEmpty(pos) && !game.isFruit(pos)){
+          game.fruit.push(pos);
+        }
+      },
+      isEmpty: function(pos){
+        return game.field[pos.y][pos.x] == ' ';
+      },
+      isWall: function(pos){
+        return game.field[pos.y][pos.x] == '#';
+      },
+      isFruit: function(pos){
+        for(var i=0; i<game.fruit.length; i++){
+          var f = game.fruit[i];
+          if(pos.x == f.x && pos.y == f.y){
+            game.fruit.splice(i,1);
+            return true;
+          }
+        }
+        return false;
+      }
+    };
+
+    var snake = {
+      parts: [{x:4, y:2}, {x:3, y:2}, {x:2, y:2}],
+      facing: "E",
+      newPosition: function(){
+        var head = snake.parts[0];
+        var x = head.x, y = head.y;
+        if(snake.facing=="N") y--;
+        if(snake.facing=="S") y++;
+        if(snake.facing=="W") x--;
+        if(snake.facing=="E") x++;
+        return {x:x, y:y};
+      },
+      move: function(){
+        var pos = snake.newPosition();
+        if(game.isWall(pos)) return "gameOver";
+        for(let part of snake.parts){
+          if(part.x==pos.x && part.y==pos.y) return "gameOver";
+        }
+        if(game.isFruit(pos)){
+          snake.parts.unshift(pos);
+          game.fruitCount++;
+        } else if(game.isEmpty(pos)){
+          snake.parts.unshift(pos);
+          snake.parts.pop();
+        } else {
+          return "gameOver";
+        }
+      }
+    };
+
+    var graphics = {
+      canvas: document.getElementById("canvas"),
+      boxSize: 20,
+      drawCanvas: function(ctx){
+        var yOff = 0;
+        game.field.forEach(line=>{
+          var xOff = 0;
+          line.split('').forEach(char=>{
+            if(char=='#'){
+              ctx.fillStyle = "rgba(255,255,255,0.3)";
+              ctx.fillRect(xOff, yOff, graphics.boxSize, graphics.boxSize);
+            }
+            xOff += graphics.boxSize;
+          });
+          yOff += graphics.boxSize;
+        });
+      },
+      draw: function(ctx, source, color){
+        source.forEach(p=>{
+          ctx.fillStyle = color;
+          ctx.fillRect(p.x*graphics.boxSize, p.y*graphics.boxSize, graphics.boxSize, graphics.boxSize);
+        });
+      },
+      drawGame: function(){
+        var ctx = graphics.canvas.getContext("2d");
+        ctx.clearRect(0, 0, graphics.canvas.width, graphics.canvas.height);
+        graphics.drawCanvas(ctx);
+        graphics.draw(ctx, game.fruit, "pink");
+        graphics.draw(ctx, snake.parts, "lime");
+      }
+    };
+
+    var gameControl = {
+      processInput: function(e){
+        var k = e.key.toLowerCase();
+        if(k=="w" && snake.facing!="S") snake.facing="N";
+        if(k=="a" && snake.facing!="E") snake.facing="W";
+        if(k=="s" && snake.facing!="N") snake.facing="S";
+        if(k=="d" && snake.facing!="W") snake.facing="E";
+      },
+      startGame: function(){
+        window.addEventListener("keydown", gameControl.processInput, false);
+        game.tick();
+      }
+    };
+
+    function resetGame(){
+      game.fruitCount = 0;
+      game.fruit = [{x:5, y:3}];
+      snake.parts = [{x:4, y:2}, {x:3, y:2}, {x:2, y:2}];
+      snake.facing = "E";
+      clearTimeout(game.timer);
+      game.tick();
+    }
+
+    gameControl.startGame();
+
+    // === Cursor Glow + Trail ===
+    const cursor = document.getElementById("cursor");
+    document.addEventListener("mousemove", (e)=>{
+      cursor.style.top = e.clientY + "px";
+      cursor.style.left = e.clientX + "px";
+      const trail = document.createElement("div");
+      trail.className = "trail";
+      trail.style.top = e.clientY + "px";
+      trail.style.left = e.clientX + "px";
+      document.body.appendChild(trail);
+      setTimeout(()=>trail.remove(), 500);
+    });
+
+    const hoverElements = document.querySelectorAll("button, canvas");
+    hoverElements.forEach(el=>{
+      el.addEventListener("mouseenter", ()=>cursor.classList.add("hover"));
+      el.addEventListener("mouseleave", ()=>cursor.classList.remove("hover"));
+    });
+  </script>
+</body>
+</html>
