@@ -1,42 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Website Under Construction</title>
-    <style>
-        body {
-            background-color: #f0f0f0;
-            color: #333;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-            color: #2c3e50;
-        }
-        p {
-            font-size: 1.25rem;
-            color: #555;
-            max-width: 400px;
-        }
-        .construction-icon {
-            font-size: 5rem;
-            margin-bottom: 1rem;
-            color: #e67e22;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kraptukrait Games Portal</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #8B008B, #C71585);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      margin: 0;
+      cursor: none;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+      margin-bottom: 40px;
+    }
+
+    .games-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 25px;
+      width: 80%;
+      max-width: 800px;
+    }
+
+    .game-card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 30px 20px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .game-card:hover {
+      transform: translateY(-10px) scale(1.05);
+      background: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 0 35px 10px rgba(255,255,255,0.5);
+    }
+
+    .game-card::after {
+      content: "▶";
+      position: absolute;
+      right: 20px;
+      bottom: 15px;
+      opacity: 0.3;
+      font-size: 1.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .game-card:hover::after {
+      opacity: 0.8;
+      transform: translateX(5px);
+    }
+
+    button {
+      margin-top: 40px;
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #C71585;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #C71585;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.8);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform 0.05s ease, width 0.2s ease, height 0.2s ease, background 0.2s ease;
+      box-shadow: 0 0 15px 5px rgba(255,255,255,0.6),
+                  0 0 30px 15px rgba(255,255,255,0.3);
+      mix-blend-mode: lighten;
+      z-index: 9999;
+    }
+
+    .cursor.hover {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 40px 15px rgba(255,255,255,0.6),
+                  0 0 80px 40px rgba(255,255,255,0.2);
+    }
+
+    .trail {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: lighten;
+      z-index: 9998;
+      animation: fade 0.5s forwards;
+    }
+
+    @keyframes fade {
+      from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      to { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    }
+
+  </style>
 </head>
 <body>
-    <div class="construction-icon">🚧</div>
-    <h1>Website Under Construction</h1>
-    <p>We're working hard to bring you a great experience. Please check back soon!</p>
+  <div class="cursor" id="cursor"></div>
+
+  <h1>🎮 Kraptukrait Games</h1>
+
+  <div class="games-container">
+    <div class="game-card" onclick="window.location.href='Noughts and Crosses/Noughts and Crosses.html'">⭕ Noughts and Crosses</div>
+    <div class="game-card" onclick="window.location.href='Snake/Snake.html'">🐍 Snake</div>
+    <div class="game-card" onclick="alert('🔧 Loading... Please wait')">🏓 Pong</div>
+    <div class="game-card" onclick="alert('🔧 Loading... Please wait')">🧠 Memory</div>
+  </div>
+
+  <button onclick="alert('More games coming soon!')">🚀 More Games</button>
+
+  <script>
+    const cursor = document.getElementById("cursor");
+
+    document.addEventListener("mousemove", (e) => {
+      cursor.style.top = e.clientY + "px";
+      cursor.style.left = e.clientX + "px";
+
+      const trail = document.createElement("div");
+      trail.className = "trail";
+      trail.style.top = e.clientY + "px";
+      trail.style.left = e.clientX + "px";
+      document.body.appendChild(trail);
+      setTimeout(() => trail.remove(), 500);
+    });
+
+    const hoverElements = document.querySelectorAll(".game-card, button");
+    hoverElements.forEach(el => {
+      el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+      el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
+    });
+  </script>
 </body>
 </html>
