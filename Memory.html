@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kraptukrait Memory</title>
+
+<style>
+    body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #8B008B, #C71585);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        margin: 0;
+        overflow: hidden;
+        cursor: none;
+    }
+
+    h1 {
+        margin-bottom: 25px;
+        text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+
+    #board {
+        display: grid;
+        grid-template-columns: repeat(4, 120px);
+        grid-gap: 15px;
+    }
+
+    .card {
+        width: 120px;
+        height: 120px;
+        border-radius: 15px;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2.5rem;
+        user-select: none;
+        cursor: pointer;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform .5s;
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 25px 10px rgba(255,255,255,0.7);
+    }
+
+    .card.flipped {
+        transform: rotateY(180deg);
+    }
+
+    .front, .back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+        backface-visibility: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .front {
+        background: rgba(255,255,255,0.3);
+        transform: rotateY(180deg);
+        font-weight: bold;
+    }
+
+    .back {
+        background: rgba(255,255,255,0.15);
+    }
+
+    button {
+        margin-top: 25px;
+        padding: 12px 25px;
+        font-size: 16px;
+        background-color: #fff;
+        color: #007bff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
+    }
+
+    button:hover {
+        background-color: #007bff;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .cursor {
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.8);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        transition: 0.05s ease;
+        mix-blend-mode: lighten;
+        z-index: 9999;
+        box-shadow: 0 0 15px 5px rgba(255,255,255,0.6);
+    }
+
+    .cursor.hover {
+        width: 50px;
+        height: 50px;
+        background: rgba(255,255,255,0.3);
+        box-shadow: 0 0 40px 15px rgba(255,255,255,0.6);
+    }
+
+    .trail {
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        animation: fade 0.5s forwards;
+        mix-blend-mode: lighten;
+    }
+
+    @keyframes fade {
+        from { opacity: 1; }
+        to { opacity: 0; transform: scale(0.5); }
+    }
+
+    .spark {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none;
+        animation: sparkle .6s forwards;
+    }
+
+    @keyframes sparkle {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5) translate(var(--x), var(--y)); opacity: 1; }
+        100% { transform: scale(0) translate(var(--x), var(--y)); opacity: 0; }
+    }
+
+</style>
+</head>
+
+<body>
+
+<div id="cursor" class="cursor"></div>
+
+<h1>Memory</h1>
+
+<div id="board"></div>
+
+<button onclick="resetGame()">🔄 Reset Game</button>
+
+<script>
+    const symbols = ["🍒","⭐","🔥","💎","🎲","🎵","🌙","⚡"];
+    let deck = [...symbols, ...symbols];
+    let first = null;
+    let block = false;
+
+    const board = document.getElementById("board");
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function createCard(symbol) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+            <div class="back"></div>
+            <div class="front">${symbol}</div>
+        `;
+
+        card.addEventListener("click", () => flip(card, symbol));
+
+        return card;
+    }
+
+    function flip(card, symbol) {
+        if (block || card.classList.contains("flipped")) return;
+
+        card.classList.add("flipped");
+        createSparks(card);
+
+        if (!first) {
+            first = {card, symbol};
+            return;
+        }
+
+        block = true;
+
+        if (first.symbol === symbol) {
+            first = null;
+            block = false;
+        } else {
+            setTimeout(() => {
+                card.classList.remove("flipped");
+                first.card.classList.remove("flipped");
+                first = null;
+                block = false;
+            }, 700);
+        }
+    }
+
+    function createSparks(card) {
+        for (let i = 0; i < 10; i++) {
+            const s = document.createElement("div");
+            s.className = "spark";
+            s.style.setProperty('--x', (Math.random() * 60 - 30) + "px");
+            s.style.setProperty('--y', (Math.random() * 60 - 30) + "px");
+            card.appendChild(s);
+            setTimeout(() => s.remove(), 600);
+        }
+    }
+
+    function resetGame() {
+        board.innerHTML = "";
+        first = null;
+        block = false;
+
+        shuffle(deck).forEach(symbol => {
+            board.appendChild(createCard(symbol));
+        });
+    }
+
+    resetGame();
+
+    const cursor = document.getElementById("cursor");
+    document.addEventListener("mousemove", (e) => {
+        cursor.style.top = e.clientY + "px";
+        cursor.style.left = e.clientX + "px";
+
+        const trail = document.createElement("div");
+        trail.className = "trail";
+        trail.style.top = e.clientY + "px";
+        trail.style.left = e.clientX + "px";
+        document.body.appendChild(trail);
+        setTimeout(() => trail.remove(), 500);
+    });
+
+    document.querySelectorAll("button").forEach(el => {
+        el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+        el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
+    });
+
+</script>
+
+</body>
+</html>
