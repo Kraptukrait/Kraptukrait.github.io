@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kraptukrait Pong</title>
+
+<style>
+    body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #8B008B, #C71585);
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        overflow: hidden;
+        cursor: none;
+    }
+
+    h1 {
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+    }
+
+    canvas {
+        background: rgba(255,255,255,0.15);
+        border-radius: 15px;
+        box-shadow: 0 0 25px rgba(255,255,255,0.6);
+    }
+
+    button {
+        margin-top: 25px;
+        padding: 12px 25px;
+        font-size: 16px;
+        background-color: #fff;
+        color: #007bff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
+    }
+
+    button:hover {
+        background-color: #007bff;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    /* Cursor glow */
+    .cursor {
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.8);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 15px 5px rgba(255,255,255,0.6);
+        mix-blend-mode: lighten;
+        transition: 0.05s ease;
+        z-index: 9999;
+    }
+
+    .trail {
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        animation: fade 0.5s forwards;
+        mix-blend-mode: lighten;
+    }
+
+    @keyframes fade {
+        from { opacity: 1; }
+        to { opacity: 0; transform: scale(0.5); }
+    }
+</style>
+</head>
+<body>
+
+<div id="cursor" class="cursor"></div>
+
+<h1>Pong</h1>
+<canvas id="pong" width="800" height="500"></canvas>
+
+<button onclick="resetGame()">🔄 Reset Game</button>
+
+<script>
+const canvas = document.getElementById("pong");
+const ctx = canvas.getContext("2d");
+
+// Player paddles
+let player = { x: 10, y: canvas.height / 2 - 40, width: 15, height: 80, score: 0 };
+let ai = { x: canvas.width - 25, y: canvas.height / 2 - 40, width: 15, height: 80, score: 0 };
+
+// Ball
+let ball = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    size: 12,
+    speedX: 5,
+    speedY: 5
+};
+
+let keys = {};
+
+// Player movement
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+function movePlayer() {
+    if (keys["ArrowUp"] && player.y > 0) player.y -= 7;
+    if (keys["ArrowDown"] && player.y + player.height < canvas.height) player.y += 7;
+}
+
+// AI movement
+function moveAI() {
+    if (ai.y + ai.height / 2 < ball.y) ai.y += 5;
+    else ai.y -= 5;
+}
+
+// Ball logic
+function moveBall() {
+    ball.x += ball.speedX;
+    ball.y += ball.speedY;
+
+    // Top/bottom bounce
+    if (ball.y <= 0 || ball.y + ball.size >= canvas.height) ball.speedY *= -1;
+
+    // Player collision
+    if (ball.x <= player.x + player.width &&
+        ball.y + ball.size >= player.y &&
+        ball.y <= player.y + player.height) {
+        ball.speedX *= -1;
+    }
+
+    // AI collision
+    if (ball.x + ball.size >= ai.x &&
+        ball.y + ball.size >= ai.y &&
+        ball.y <= ai.y + ai.height) {
+        ball.speedX *= -1;
+    }
+
+    // Score
+    if (ball.x < 0) {
+        ai.score++;
+        resetBall();
+    }
+    if (ball.x > canvas.width) {
+        player.score++;
+        resetBall();
+    }
+}
+
+function resetBall() {
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height / 2;
+    ball.speedX *= -1;
+}
+
+// Drawing
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Player
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // AI
+    ctx.fillRect(ai.x, ai.y, ai.width, ai.height);
+
+    // Ball
+    ctx.fillRect(ball.x, ball.y, ball.size, ball.size);
+
+    // Score
+    ctx.font = "30px Poppins";
+    ctx.fillText(player.score, canvas.width / 2 - 50, 40);
+    ctx.fillText(ai.score, canvas.width / 2 + 30, 40);
+}
+
+function gameLoop() {
+    movePlayer();
+    moveAI();
+    moveBall();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+
+function resetGame() {
+    player.score = 0;
+    ai.score = 0;
+    resetBall();
+}
+
+const cursor = document.getElementById("cursor");
+
+document.addEventListener("mousemove", (e) => {
+    cursor.style.top = e.clientY + "px";
+    cursor.style.left = e.clientX + "px";
+
+    const trail = document.createElement("div");
+    trail.className = "trail";
+    trail.style.top = e.clientY + "px";
+    trail.style.left = e.clientX + "px";
+    document.body.appendChild(trail);
+
+    setTimeout(() => trail.remove(), 500);
+});
+</script>
+
+</body>
+</html>
